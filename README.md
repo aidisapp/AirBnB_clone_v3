@@ -155,6 +155,7 @@ No known bugs at this time.
 
 ## Authors
 Prosper Atu - [Github](https://github.com/prosper74)
+
 Idongesit Ekanem - [Github](https://github.com/aidisapp)
 
 ## License
