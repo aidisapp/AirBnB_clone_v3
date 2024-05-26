@@ -157,6 +157,5 @@ No known bugs at this time.
 Prosper Atu - [Github](https://github.com/prosper74)
 Idongesit Ekanem - [Github](https://github.com/aidisapp)
 
-Second part of Airbnb: Joann Vuong
 ## License
 Public Domain. No copy write protection. 
