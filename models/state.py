@@ -1,34 +1,41 @@
 #!/usr/bin/python3
-""" holds class State"""
-import models
+"""
+State Class from Models Module.
+Handles the representation of State objects in the application.
+"""
+import os
 from models.base_model import BaseModel, Base
-from models.city import City
-from os import getenv
-import sqlalchemy
-from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy import Column, String
+import models
+
+# Determine the storage type from environment variables
+storage_type = os.environ.get('HBNB_TYPE_STORAGE')
 
 
 class State(BaseModel, Base):
-    """Representation of state """
-    if models.storage_t == "db":
+    """
+    State class for managing state information in the application.
+    Inherits from BaseModel and Base (SQLAlchemy).
+    """
+
+    if storage_type == "db":
         __tablename__ = 'states'
         name = Column(String(128), nullable=False)
-        cities = relationship("City", backref="state")
+        cities = relationship('City', backref='state', cascade='delete')
     else:
-        name = ""
+        # Define attributes for file storage
+        name = ''
 
-    def __init__(self, *args, **kwargs):
-        """initializes state"""
-        super().__init__(*args, **kwargs)
-
-    if models.storage_t != "db":
+    if storage_type != 'db':
         @property
         def cities(self):
-            """getter for list of city instances related to the state"""
+            """
+            Getter method for cities.
+            :return: List of City objects associated with the current State.
+            """
             city_list = []
-            all_cities = models.storage.all(City)
-            for city in all_cities.values():
+            for city in models.storage.all("City").values():
                 if city.state_id == self.id:
                     city_list.append(city)
             return city_list
