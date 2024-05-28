@@ -1,24 +1,43 @@
 #!/usr/bin/python3
 """
-Fabric script generates .tgz archive of all in web_static/ using func 'do_pack'
-Usage: fab -f 1-pack_web_static.py do_pack
-
-All files in the folder web_static must be added to the final archive
-All archives must be stored in the folder 'versions' (create folder if none)
-Create archive "web_static_<year><month><day><hour><minute><second>.tgz"
-The function do_pack must return the archive path, else return None
+Fabric script that generates a tgz archive
+from the contents of the web_static directory.
 """
+
 from fabric.api import local
-from time import strftime
+from datetime import datetime
 
 
 def do_pack():
-    """generate .tgz archive of web_static/ folder"""
-    timenow = strftime("%Y%M%d%H%M%S")
+    """
+    Generates a .tgz archive from the contents of the web_static directory.
+    Creates a versions directory if it does not exist and stores the archive
+    with a timestamp in its filename. The archive includes the contents of
+    the web_static directory.
+
+    Returns:
+        str: The path to the created archive file if successful,
+        None otherwise.
+    """
+    # Get the current time formatted as YYYYMMDDHHMMSS
+    time = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+
+    # Construct the archive file name
+    file_name = "versions/web_static_{}.tgz".format(time)
+
     try:
-        local("mkdir -p versions")
-        filename = "versions/web_static_{}.tgz".format(timenow)
-        local("tar -cvzf {} web_static/".format(filename))
-        return filename
-    except:
+        # Create the versions directory if it doesn't exist
+        local("mkdir -p ./versions")
+
+        # Create a tar gzipped archive
+        local("tar --create --verbose -z --file={}./web_static".format(
+            file_name))
+
+        # Return the path to the created archive file
+        return file_name
+    except Exception as e:
+        # Print the exception for debugging purposes
+        print("An error occurred:", e)
+
+        # Return None if an exception occurs
         return None

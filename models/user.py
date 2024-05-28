@@ -1,48 +1,60 @@
 #!/usr/bin/python3
 """
-User Class from Models Module.
-Handles the representation of User objects in the application.
+User Class from Models Module
 """
-from os import getenv
-from sqlalchemy import Column, String
-from sqlalchemy.orm import relationship
-from models.base_model import BaseModel, Base
 import hashlib
+import os
+from models.base_model import BaseModel, Base
+from sqlalchemy.orm import relationship
+from sqlalchemy import Column, String
+
+# Fetch the storage type from environment variables
+STORAGE_TYPE = os.environ.get('HBNB_TYPE_STORAGE')
 
 
 class User(BaseModel, Base):
     """
-    User class for managing user information in the application.
-    Inherits from BaseModel and Base (SQLAlchemy).
+    User class handles all application users
     """
-    __tablename__ = "users"
-    if getenv("HBNB_TYPE_STORAGE", "fs") == "db":
+
+    if STORAGE_TYPE == "db":
+        # Define table name and columns for database storage
+        __tablename__ = 'users'
         email = Column(String(128), nullable=False)
         password = Column(String(128), nullable=False)
         first_name = Column(String(128), nullable=True)
         last_name = Column(String(128), nullable=True)
-        places = relationship("Place", backref="user",
-                              cascade="all, delete, delete-orphan")
-        reviews = relationship("Review", backref="user",
-                               cascade="all, delete, delete-orphan")
+
+        # Relationships with other classes for database storage
+        places = relationship('Place', backref='user', cascade='delete')
+        reviews = relationship('Review', backref='user', cascade='delete')
     else:
-        email = ""
-        password = ""
-        first_name = ""
-        last_name = ""
+        # Define attributes for file storage
+        email = ''
+        password = ''
+        first_name = ''
+        last_name = ''
 
-    @property
-    def password(self):
+    def __init__(self, *args, **kwargs):
         """
-        Getter for password.
-        :return: Hashed password
+        Instantiate a User object.
+        If 'password' is provided in kwargs, encrypt it and set it.
         """
-        return self._password
+        if kwargs:
+            # If 'password' is provided, encrypt it and set it
+            pwd = kwargs.pop('password', None)
+            if pwd:
+                User.__set_password(self, pwd)
+        super().__init__(*args, **kwargs)
 
-    @password.setter
-    def password(self, value):
+    def __set_password(self, pwd):
         """
-        Setter for password. Hashes the password using MD5 before storing.
-        :param password: Plain text password
+        Custom setter method to encrypt password using MD5.
         """
-        self._password = hashlib.md5(value.encode('utf8')).hexdigest()
+        # Encrypt password using MD5 algorithm
+        secure = hashlib.md5()
+        secure.update(pwd.encode("utf-8"))
+        secure_password = secure.hexdigest()
+
+        # Set the encrypted password attribute
+        setattr(self, "password", secure_password)

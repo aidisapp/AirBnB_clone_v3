@@ -1,27 +1,32 @@
 #!/usr/bin/python3
 """
-City Class from Models Module.
-Handles the representation of City objects in the application.
+City Class from Models Module
 """
-from os import getenv
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+
+import os
 from models.base_model import BaseModel, Base
-import models
-from models.state import State
+from sqlalchemy.orm import relationship
+from sqlalchemy import Column, String, ForeignKey
+
+# Determine the storage type from environment variables
+STORAGE_TYPE = os.environ.get('HBNB_TYPE_STORAGE')
 
 
 class City(BaseModel, Base):
     """
-    City class for managing city information in the application.
-    Inherits from BaseModel and Base (SQLAlchemy).
+    City class handles all application cities.
     """
-    __tablename__ = "cities"
-    if getenv("HBNB_TYPE_STORAGE") == "db":
+
+    if STORAGE_TYPE == "db":
+        # Define table name and columns for database storage
+        __tablename__ = 'cities'
         name = Column(String(128), nullable=False)
         state_id = Column(String(60), ForeignKey('states.id'), nullable=False)
-        places = relationship("Place", backref="cities",
-                              cascade="all, delete, delete-orphan")
+
+        # Define relationship to Place with cascading delete
+        places = relationship('Place', backref='cities', cascade='delete')
     else:
-        state_id = ""
-        name = ""
+        # Define attributes for file storage
+        state_id = ''
+        name = ''
+        places = []
