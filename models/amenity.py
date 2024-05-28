@@ -1,27 +1,22 @@
 #!/usr/bin/python3
-"""
-Amenity Class from Models Module.
-Handles the representation of Amenity objects in the application.
-"""
-import os
+'''
+    Implementation of the Amenity class
+'''
+from os import getenv
 from models.base_model import BaseModel, Base
-from sqlalchemy.orm import relationship
+from models.place import place_amenity
 from sqlalchemy import Column, String
-
-storage_type = os.environ.get('HBNB_TYPE_STORAGE')
+from sqlalchemy.orm import relationship
 
 
 class Amenity(BaseModel, Base):
-    """
-    Amenity class for managing application amenities.
-    Inherits from BaseModel and Base (SQLAlchemy).
-    """
-    if storage_type == "db":
-        __tablename__ = 'amenities'
+    '''
+        Implementation for the Amenities.
+    '''
+    __tablename__ = "amenities"
+    if getenv("HBNB_TYPE_STORAGE") == "db":
         name = Column(String(128), nullable=False)
-
-        # Define the many-to-many relationship with Place
-        place_amenities = relationship("Place", secondary="place_amenity")
+        place_amenities = relationship("Place", secondary=place_amenity,
+                                       back_populates="amenities")
     else:
-        # Define 'name' attribute for file storage
-        name = ''
+        name = ""

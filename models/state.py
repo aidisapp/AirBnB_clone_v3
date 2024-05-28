@@ -3,14 +3,11 @@
 State Class from Models Module.
 Handles the representation of State objects in the application.
 """
-import os
-from models.base_model import BaseModel, Base
-from sqlalchemy.orm import relationship
+from os import getenv
 from sqlalchemy import Column, String
+from sqlalchemy.orm import relationship
+from models.base_model import BaseModel, Base
 import models
-
-# Determine the storage type from environment variables
-storage_type = os.environ.get('HBNB_TYPE_STORAGE')
 
 
 class State(BaseModel, Base):
@@ -18,24 +15,23 @@ class State(BaseModel, Base):
     State class for managing state information in the application.
     Inherits from BaseModel and Base (SQLAlchemy).
     """
+    __tablename__ = "states"
 
-    if storage_type == "db":
-        __tablename__ = 'states'
+    if getenv("HBNB_TYPE_STORAGE") == "db":
         name = Column(String(128), nullable=False)
-        cities = relationship('City', backref='state', cascade='delete')
+        cities = relationship("City", backref="state",
+                              cascade="all, delete, delete-orphan")
     else:
-        # Define attributes for file storage
-        name = ''
+        name = ""
 
-    if storage_type != 'db':
         @property
         def cities(self):
             """
             Getter method for cities.
             :return: List of City objects associated with the current State.
             """
-            city_list = []
+            list_cities = []
             for city in models.storage.all("City").values():
                 if city.state_id == self.id:
-                    city_list.append(city)
-            return city_list
+                    list_cities.append(city)
+            return list_cities

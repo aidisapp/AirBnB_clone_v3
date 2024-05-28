@@ -3,14 +3,11 @@
 User Class from Models Module.
 Handles the representation of User objects in the application.
 """
-import os
-from models.base_model import BaseModel, Base
-from sqlalchemy.orm import relationship
+from os import getenv
 from sqlalchemy import Column, String
-from hashlib import md5
-
-# Determine the storage type from environment variables
-storage_type = os.environ.get('HBNB_TYPE_STORAGE')
+from sqlalchemy.orm import relationship
+from models.base_model import BaseModel, Base
+import hashlib
 
 
 class User(BaseModel, Base):
@@ -18,31 +15,21 @@ class User(BaseModel, Base):
     User class for managing user information in the application.
     Inherits from BaseModel and Base (SQLAlchemy).
     """
-
-    if storage_type == "db":
-        __tablename__ = 'users'
+    __tablename__ = "users"
+    if getenv("HBNB_TYPE_STORAGE", "fs") == "db":
         email = Column(String(128), nullable=False)
-        password = Column("password", String(128), nullable=False)
+        password = Column(String(128), nullable=False)
         first_name = Column(String(128), nullable=True)
         last_name = Column(String(128), nullable=True)
-
-        # Define relationships with Place and Review
-        places = relationship('Place', backref='user', cascade='delete')
-        reviews = relationship('Review', backref='user', cascade='delete')
+        places = relationship("Place", backref="user",
+                              cascade="all, delete, delete-orphan")
+        reviews = relationship("Review", backref="user",
+                               cascade="all, delete, delete-orphan")
     else:
-        # Define attributes for file storage
-        email = ''
-        password = ''
-        first_name = ''
-        last_name = ''
-
-    def __init__(self, *args, **kwargs):
-        """
-        Initialize User Model, inherits from BaseModel.
-        :param args: Arguments for BaseModel
-        :param kwargs: Keyword arguments for BaseModel
-        """
-        super().__init__(*args, **kwargs)
+        email = ""
+        password = ""
+        first_name = ""
+        last_name = ""
 
     @property
     def password(self):
@@ -50,12 +37,12 @@ class User(BaseModel, Base):
         Getter for password.
         :return: Hashed password
         """
-        return self.__dict__.get("password")
+        return self._password
 
     @password.setter
-    def password(self, password):
+    def password(self, value):
         """
         Setter for password. Hashes the password using MD5 before storing.
         :param password: Plain text password
         """
-        self.__dict__["password"] = md5(password.encode('utf-8')).hexdigest()
+        self._password = hashlib.md5(value.encode('utf8')).hexdigest()
